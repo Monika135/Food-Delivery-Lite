@@ -1,7 +1,7 @@
 from urllib.parse import parse_qs
 from channels.db import database_sync_to_async
-from django.contrib.auth.models import AnonymousUser
-from rest_framework_simplejwt.tokens import UntypedToken
+# from django.contrib.auth.models import AnonymousUser
+# from rest_framework_simplejwt.tokens import UntypedToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.contrib.auth import get_user_model
 
@@ -12,6 +12,8 @@ class JWTAuthMiddleware:
         self.inner = inner
 
     def __call__(self, scope):
+        from django.contrib.auth.models import AnonymousUser
+        from rest_framework_simplejwt.tokens import UntypedToken
         return JWTAuthMiddlewareInstance(scope, self.inner)
 
 class JWTAuthMiddlewareInstance:
