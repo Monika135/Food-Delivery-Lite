@@ -25,19 +25,24 @@
 import os
 import django
 from channels.routing import ProtocolTypeRouter, URLRouter
-from bookings.routing import websocket_urlpatterns
-from bookings.middleware import JWTAuthMiddleware  # your custom middleware
+from channels.auth import AuthMiddlewareStack
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "food_delivery.settings")
+
 django.setup()
 
+
+from bookings.routing import websocket_urlpatterns
+from bookings.middleware import JWTAuthMiddleware  # if you have a custom middleware
+
+
 application = ProtocolTypeRouter({
+    "http": django.core.asgi.get_asgi_application(),
     "websocket": JWTAuthMiddleware(
-        URLRouter(
-            websocket_urlpatterns
-        )
+        URLRouter(websocket_urlpatterns)
     ),
 })
+
 
 
 # """
