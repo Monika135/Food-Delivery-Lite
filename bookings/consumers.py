@@ -1,10 +1,11 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from .models import Booking, ChatMessage
+# from .models import Booking, ChatMessage
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        from .models import ChatMessage, Booking
         self.booking_id = self.scope['url_route']['kwargs']['booking_id']
         print("WebSocket trying to connect with user:", self.scope['user'])
         self.user = self.scope['user']
