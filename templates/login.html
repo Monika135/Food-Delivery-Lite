@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-4">
+    <div class="card shadow p-4">
+      <h4 class="text-center mb-3">Login</h4>
+
+      <!-- Step 1: Mobile -->
+      <div id="mobileSection">
+        <div class="form-group mb-3">
+          <label>Mobile Number</label>
+          <input type="text" id="mobile" class="form-control" placeholder="Enter mobile number">
+        </div>
+        <a href="/signup/">Signup</a>
+        <button id="sendOtpBtn" class="btn btn-primary w-100">Send OTP</button>
+      </div>
+
+      <!-- Step 2: OTP -->
+      <div id="otpSection" style="display:none;">
+        <div class="form-group mb-3">
+          <label>Enter OTP</label>
+          <input type="text" id="otp" class="form-control" placeholder="Enter OTP (1234)">
+        </div>
+        <button id="verifyOtpBtn" class="btn btn-success w-100">Verify OTP</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+let requestId = null;
+
+
+$('#sendOtpBtn').click(function() {
+    const mobile = $('#mobile').val().trim();
+    if (!mobile) {
+        alert("Please enter your mobile number");
+        return;
+    }
+
+    $.ajax({
+        url: '/users/send_otp/',
+        type: 'POST',
+        data: JSON.stringify({ mobile }),
+        contentType: 'application/json',
+        success: function(res) {
+            requestId = res.request_id;
+            localStorage.setItem('request_id', res.request_id);
+            localStorage.setItem('mobile', res.mobile);
+            alert('OTP sent successfully (use 1234 for demo)');
+            $('#mobileSection').hide();
+            $('#otpSection').show();
+        },
+        error: function(xhr) {
+            alert(xhr.responseJSON?.detail || xhr.responseJSON?.message || 'Failed to send OTP');
+        }
+    });
+});
+
+
+$('#verifyOtpBtn').click(function() {
+    const otp = $('#otp').val().trim();
+    if (!otp) {
+        alert("Please enter OTP");
+        return;
+    }
+
+    $.ajax({
+        url: '/users/verify_otp/',
+        type: 'POST',
+        data: JSON.stringify({ request_id: localStorage.getItem('request_id'), otp, mobile: localStorage.getItem('mobile') }),
+        contentType: 'application/json',
+        success: function(res) {
+            alert('Login successful!');
+            localStorage.setItem('access', res.access);
+            localStorage.setItem('refresh', res.refresh);
+            localStorage.setItem('role', res.user.role);
+            localStorage.setItem('user_id', res.user.id);
+            localStorage.setItem('mobile', res.user.mobile);
+
+            if (res.user.role === 'customer') window.location.href = '/customer/dashboard/';
+            else if (res.user.role === 'partner') window.location.href = '/partner/dashboard/';
+            else window.location.href = '/admin/dashboard/';
+        },
+        error: function(xhr) {
+            alert(xhr.responseJSON?.detail || xhr.responseJSON?.message || 'Invalid OTP or request ID');
+        }
+    });
+});
+</script>
+{% endblock %}

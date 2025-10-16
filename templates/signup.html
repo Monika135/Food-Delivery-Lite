@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="card shadow p-4">
+      <h4 class="text-center mb-3">Signup</h4>
+      
+      <div class="form-group mb-3">
+        <label>Name</label>
+        <input type="text" id="name" class="form-control" placeholder="Enter your full name">
+      </div>
+
+      <div class="form-group mb-3">
+        <label>Mobile Number</label>
+        <input type="text" id="mobile" class="form-control" placeholder="Enter mobile number">
+      </div>
+
+      <div class="form-group mb-3">
+        <label>Role</label>
+        <select id="role" class="form-control">
+          <option value="">Select role</option>
+          <option value="customer">Customer</option>
+          <option value="partner">Delivery Partner</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+
+      <!-- Address (required only for customers) -->
+      <div class="form-group mb-3" id="addressGroup" style="display:none;">
+        <label>Address <span class="text-danger">*</span></label>
+        <textarea id="address" class="form-control" placeholder="Enter address"></textarea>
+      </div>
+
+      <button id="signupBtn" class="btn btn-primary w-100">Signup</button>
+
+      <div class="text-center mt-3">
+        <a href="/">Already have an account? Login</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    $('#role').change(function() {
+        const role = $(this).val();
+        if (role === 'customer') {
+            $('#addressGroup').show();
+        } else {
+            $('#addressGroup').hide();
+        }
+    });
+
+    $('#signupBtn').click(function() {
+        const name = $('#name').val().trim();
+        const mobile = $('#mobile').val().trim();
+        const role = $('#role').val();
+        const address = $('#address').val().trim();
+
+        if (!name || !mobile || !role) {
+            alert('Please fill all required fields.');
+            return;
+        }
+        if (role === 'customer' && !address) {
+            alert('Address is required for customers.');
+            return;
+        }
+
+        $.ajax({
+            url: '/users/create_user/',
+            type: 'POST',
+            data: JSON.stringify({ name, mobile, role, address }),
+            contentType: 'application/json',
+            success: function(res) {
+                alert('Signup successful! Please login using OTP.');
+                window.location.href = '/';
+            },
+            error: function(xhr) {
+                alert(xhr.responseJSON?.message || 'Signup failed. Try again.');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

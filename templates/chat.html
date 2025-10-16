@@ -1,0 +1,43 @@
+<h4>Chat Room - Booking #{{ booking_id }}</h4>
+<div id="chat-box" style="height:300px; overflow-y:auto; border:1px solid #ccc; padding:10px;"></div>
+<div class="input-group mt-2">
+    <input id="chatMessage" class="form-control" placeholder="Type a message...">
+    <button id="sendBtn" class="btn btn-primary">Send</button>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // debugger;
+const bookingId = "{{ booking_id }}";
+console.log(bookingId)
+const token = localStorage.getItem('access');
+console.log(token)
+const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+console.log(wsScheme)
+console.log(window.location.host)
+console.log(`${wsScheme}://${window.location.host}/ws/chat/${bookingId}/?token=${encodeURIComponent(token)}`)
+const ws = new WebSocket(`${wsScheme}://${window.location.host}/ws/chat/${bookingId}/?token=${encodeURIComponent(token)}`);
+console.log(ws)
+
+ws.onopen = function() {
+    console.log("WebSocket connected!");
+};
+
+ws.onmessage = function(event){
+    const data = JSON.parse(event.data);
+    $('#chat-box').append(`<div><strong>${data.user}:</strong> ${data.message}</div>`);
+    $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
+};
+
+ws.onerror = function(e) {
+    console.log("WebSocket error:", e);
+};
+
+$('#sendBtn').click(function(){
+    const message = $('#chatMessage').val();
+    if(message){
+        ws.send(JSON.stringify({message: message}));
+        $('#chatMessage').val('');
+    }
+});
+</script>

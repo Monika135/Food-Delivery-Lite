@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Your Bookings</h3>
+<div class="d-flex justify-content-end mb-3">
+    <button id="newBookingBtn" class="btn btn-success">Create New Booking</button>
+</div>
+
+<table class="table table-bordered" id="bookingTable">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Product</th>
+            <th>Status</th>
+            <th>Created At</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Partner ID</th>
+            <th>Partner Name</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+$(document).ready(function(){
+    loadBookings();
+
+    $('#newBookingBtn').click(function(){
+        const productId = prompt('Enter Product ID to book:');
+        if(!productId) return;
+        const quantity = parseInt(prompt('Enter quantity (default 1):') || '1', 10);
+        $.ajax({
+            url: '/bookings/bookings/',
+            method: 'POST',
+            data: JSON.stringify({ product_id: productId, quantity: quantity }),
+            contentType: 'application/json',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('access') },
+            success: function(){ loadBookings(); }
+        });
+    });
+
+    function loadBookings() {
+        $.ajax({
+            url: '/bookings/bookings/',
+            method: 'GET',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('access') },
+            success: function(data) {
+                const tbody = $('#bookingTable tbody');
+                tbody.empty();
+
+                const activeBookings = data.filter(b => b.is_active === true);
+
+                activeBookings.forEach(b => {
+                    const cancelBtn = `<button class="btn btn-sm btn-danger cancelBtn" data-id="${b.booking_id}">Cancel</button>`;
+                    
+                    const chatBtn = b.partner_id 
+                        ? `<button class="btn btn-sm btn-primary chatBtn" data-id="${b.booking_id}">Chat</button>` 
+                        : '';
+
+                    const actionBtns = [cancelBtn, chatBtn].join(' ');
+
+                    tbody.append(`
+                        <tr>
+                            <td>${b.booking_id}</td>
+                            <td>${b.product}</td>
+                            <td>${b.status}</td>
+                            <td>${b.created_at}</td>
+                            <td>${b.quantity}</td>
+                            <td>${b.price}</td>
+                            <td>${b.partner_id}</td>
+                            <td>${b.partner_name}</td>
+                            <td>${actionBtns}</td>
+                        </tr>
+                    `);
+                });
+            }
+        });
+    }
+
+    $(document).on('click', '.chatBtn', function(){
+        const bookingId = $(this).data('id');
+        window.location.href = `/chat/${bookingId}/`;
+    });
+
+    $(document).on('click', '.cancelBtn', function(){
+        const id = $(this).data('id');
+        $.ajax({
+            url: `/bookings/bookings/`,
+            method: 'PATCH',
+            data: JSON.stringify({ booking_id: id }),
+            contentType: 'application/json',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('access') },
+            success: function(){ loadBookings(); }
+        });
+    });
+});
+</script>
+{% endblock %}
