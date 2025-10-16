@@ -49,7 +49,7 @@ urlpatterns = [
     path('customer/dashboard/', customer_dashboard, name='customer'),
     path('partner/dashboard/', partner_dashboard, name='partner'),
     path('admin/dashboard/', admin_dashboard, name='admin'),
-    path('chat/<uuid:booking_id>/', chat_view, name='chat'),
+    # path('chat/<uuid:booking_id>/', chat_view, name='chat'),
     path('users/', include('users.urls')),
     path('bookings/', include('bookings.urls'))
 ]
