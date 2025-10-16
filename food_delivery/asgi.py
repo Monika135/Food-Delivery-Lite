@@ -23,26 +23,25 @@
 # )
 
 import os
-import django
-from channels.routing import ProtocolTypeRouter, URLRouter
-from bookings.routing import websocket_urlpatterns
-from bookings.middleware import JWTAuthMiddleware
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "food_delivery.settings")
-
-# Setup Django before importing anything that uses models
-django.setup()
-
 from django.core.asgi import get_asgi_application
+from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.auth import AuthMiddlewareStack
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'food_delivery.settings')
+
+django_asgi_app = get_asgi_application()
+
+# Lazy import routing only here
+from bookings.routing import websocket_urlpatterns
 
 application = ProtocolTypeRouter({
-    "http": get_asgi_application(),
-    "websocket": JWTAuthMiddleware(
-        URLRouter(websocket_urlpatterns)
+    "http": django_asgi_app,
+    "websocket": AuthMiddlewareStack(
+        URLRouter(
+            websocket_urlpatterns
+        )
     ),
 })
-
-
 
 
 # """
