@@ -3,7 +3,7 @@ from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'food_delivery.settings')
-
+django.setup()
 # Safe to import routing here
 import bookings.routing
 
