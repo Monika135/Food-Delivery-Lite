@@ -1,7 +1,5 @@
 # Food-Delivery-Lite
 
-# Food-Delivery-Lite
-
 Small Django project for food delivery bookings with REST API + WebSocket (Channels) features.
 
 ## Requirements
