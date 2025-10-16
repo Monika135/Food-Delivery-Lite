@@ -1,11 +1,10 @@
 from urllib.parse import parse_qs
 from channels.db import database_sync_to_async
-from django.contrib.auth.models import AnonymousUser
 from rest_framework_simplejwt.tokens import UntypedToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.contrib.auth import get_user_model
 
-User = get_user_model()
+User = get_user_model()  # This is safe because get_user_model() doesn't hit DB yet
 
 class JWTAuthMiddleware:
     def __init__(self, inner):
@@ -24,12 +23,16 @@ class JWTAuthMiddlewareInstance:
         params = parse_qs(query_string)
         token = params.get("token", [None])[0]
 
+        # Lazy import here
         self.scope["user"] = await self.get_user(token)
         inner = self.inner(self.scope)
         return await inner(receive, send)
 
     @database_sync_to_async
     def get_user(self, token):
+        # Lazy import of model here
+        from django.contrib.auth.models import AnonymousUser
+
         if not token:
             return AnonymousUser()
         try:
